@@ -9,124 +9,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Github repository
-      uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v6
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
-
-     # Add NuGet Sources
+        dotnet-version: 10.0.x
 
     - name: Create Local NuGet Directory
       run: mkdir ~/nuget
 
-    - name: Add Local Nuget Source
-      run: dotnet nuget add source ~/nuget
+    - name: Restore slnx
+      run: dotnet restore
 
-    - name: Add Garage Group NuGet Source
-      run: >
-        dotnet nuget add source ${{ secrets.GG_NUGET_SOURCE_URL }}
-        -n garage
-        -u ${{ secrets.GG_NUGET_SOURCE_USER_NAME }}
-        -p ${{ secrets.GG_NUGET_SOURCE_USER_PASSWORD }}
-        --store-password-in-clear-text
+    - name: Build slnx
+      run: dotnet build --no-restore -c Release
 
-    # Api.Contract.IssuerSigningKey
+    - name: Test slnx
+      run: dotnet test --no-restore -c Release
 
-    - name: Restore Api.Contract.IssuerSigningKey
-      run: dotnet restore ./src/*/*/Api.Contract.IssuerSigningKey.csproj
-
-    - name: Build Api.Contract.IssuerSigningKey
-      run: dotnet build ./src/*/*/Api.Contract.IssuerSigningKey.csproj --no-restore  -c Release
-
-    - name: Pack Api.Contract.IssuerSigningKey
-      run: dotnet pack ./src/*/*/Api.Contract.IssuerSigningKey.csproj --no-restore -o ~/nuget  -c Release
-
-    # Api.Contract.SigningCredentials
-
-    - name: Restore Api.Contract.SigningCredentials
-      run: dotnet restore ./src/*/*/Api.Contract.SigningCredentials.csproj
-
-    - name: Build Api.Contract.SigningCredentials
-      run: dotnet build ./src/*/*/Api.Contract.SigningCredentials.csproj --no-restore  -c Release
-
-    - name: Pack Api.Contract.SigningCredentials
-      run: dotnet pack ./src/*/*/Api.Contract.SigningCredentials.csproj --no-restore -o ~/nuget  -c Release
-
-    # Api.Asymmetric.Rsa
-
-    - name: Restore Api.Asymmetric.Rsa
-      run: dotnet restore ./src/*/*/Api.Asymmetric.Rsa.csproj
-
-    - name: Build Api.Asymmetric.Rsa
-      run: dotnet build ./src/*/*/Api.Asymmetric.Rsa.csproj --no-restore  -c Release
-
-    - name: Pack Api.Asymmetric.Rsa
-      run: dotnet pack ./src/*/*/Api.Asymmetric.Rsa.csproj --no-restore -o ~/nuget  -c Release
-
-    # Creation.Api.Contract
-
-    - name: Restore Creation.Api.Contract
-      run: dotnet restore ./src/*/*/Creation.Api.Contract.csproj
-
-    - name: Build Creation.Api.Contract
-      run: dotnet build ./src/*/*/Creation.Api.Contract.csproj --no-restore  -c Release
-
-    - name: Pack  Creation.Api.Contract
-      run: dotnet pack ./src/*/*/Creation.Api.Contract.csproj --no-restore -o ~/nuget  -c Release
-
-    # Creation.Api.Jwt
-
-    - name: Restore Creation.Api.Jwt
-      run: dotnet restore ./src/*/*/Creation.Api.Jwt.csproj
-
-    - name: Build Creation.Api.Jwt
-      run: dotnet build ./src/*/*/Creation.Api.Jwt.csproj --no-restore  -c Release
-
-    - name: Pack Creation.Api.Jwt
-      run: dotnet pack ./src/*/*/Creation.Api.Jwt.csproj --no-restore -o ~/nuget  -c Release
-
-    # Validation.Api.Contract
-
-    - name: Restore Validation.Api.Contract
-      run: dotnet restore ./src/*/*/Validation.Api.Contract.csproj
-
-    - name: Build Validation.Api.Contract
-      run: dotnet build ./src/*/*/Validation.Api.Contract.csproj --no-restore  -c Release
-
-    - name: Pack Validation.Api.Contract
-      run: dotnet pack ./src/*/*/Validation.Api.Contract.csproj --no-restore -o ~/nuget  -c Release
-
-    # Validation.Api.Jwt
-
-    - name: Restore Validation.Api.Jwt
-      run: dotnet restore ./src/*/*/Validation.Api.Jwt.csproj
-
-    - name: Build Validation.Api.Jwt
-      run: dotnet build ./src/*/*/Validation.Api.Jwt.csproj --no-restore  -c Release
-
-    - name: Pack Validation.Api.Jwt
-      run: dotnet pack ./src/*/*/Validation.Api.Jwt.csproj --no-restore -o ~/nuget  -c Release
-
-    # Validation.Middleware.Jwt
-
-    - name: Restore Validation.Middleware.Jwt
-      run: dotnet restore ./src/*/*/Validation.Middleware.Jwt.csproj
-
-    - name: Build Validation.Middleware.Jwt
-      run: dotnet build ./src/*/*/Validation.Middleware.Jwt.csproj --no-restore  -c Release
-
-    - name: Pack Validation.Middleware.Jwt
-      run: dotnet pack ./src/*/*/Validation.Middleware.Jwt.csproj --no-restore -o ~/nuget  -c Release
-
-    # Push
+    - name: Pack slnx
+      run: dotnet pack --no-build -o ~/nuget -c Release
 
     - name: Push Packages
       if: ${{ github.ref == 'refs/heads/main' }}
       run: >
-        dotnet nuget push "../../../nuget/*.nupkg"
-        -s ${{ secrets.GG_NUGET_SOURCE_URL }}
-        -k ${{ secrets.GG_NUGET_SOURCE_USER_PASSWORD }}
+        dotnet nuget push ~/nuget/*.nupkg
+        -s https://api.nuget.org/v3/index.json
+        -k ${{ secrets.NUGET_SECRET }}
         --skip-duplicate
