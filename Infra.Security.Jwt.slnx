@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/.github/">
+    <File Path=".github/workflows/dotnet.yml" />
+  </Folder>
+  <Folder Name="/Key.Api/">
+    <Project Path="src/security-key-api/Api.Asymmetric.Rsa/Api.Asymmetric.Rsa.csproj" />
+    <Project Path="src/security-key-api/Api.Contract.IssuerSigningKey/Api.Contract.IssuerSigningKey.csproj" />
+    <Project Path="src/security-key-api/Api.Contract.SigningCredentials/Api.Contract.SigningCredentials.csproj" />
+  </Folder>
+  <Folder Name="/Token.Creation/">
+    <Project Path="src/security-token-creation/Creation.Api.Contract/Creation.Api.Contract.csproj" />
+    <Project Path="src/security-token-creation/Creation.Api.Jwt/Creation.Api.Jwt.csproj" />
+  </Folder>
+  <Folder Name="/Token.Validation/">
+    <Project Path="src/security-token-validation/Validation.Api.Contract/Validation.Api.Contract.csproj" />
+    <Project Path="src/security-token-validation/Validation.Api.Jwt/Validation.Api.Jwt.csproj" />
+    <Project Path="src/security-token-validation/Validation.Middleware.Jwt/Validation.Middleware.Jwt.csproj" />
+  </Folder>
+</Solution>

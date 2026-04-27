@@ -1,7 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using GarageGroup.Infra;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using PrimeFuncPack;
 
 namespace Microsoft.AspNetCore.Builder;

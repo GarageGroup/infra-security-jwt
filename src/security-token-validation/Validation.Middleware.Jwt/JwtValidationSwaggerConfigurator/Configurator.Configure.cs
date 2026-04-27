@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace GarageGroup.Infra;
 
@@ -14,9 +14,9 @@ partial class JwtValidationSwaggerConfigurator
         }
 
         openApiDocument.Components ??= new();
-        openApiDocument.Components.SecuritySchemes ??= new Dictionary<string, OpenApiSecurityScheme>();
+        openApiDocument.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
 
-        openApiDocument.Components.SecuritySchemes[SecuritySchemeKey] = new()
+        openApiDocument.Components.SecuritySchemes[SecuritySchemeKey] = new OpenApiSecurityScheme
         {
             Name = "Authorization",
             Type = SecuritySchemeType.Http,
@@ -26,14 +26,9 @@ partial class JwtValidationSwaggerConfigurator
             Description = "JWT authorization header"
         };
 
-        var referenceScurityScheme = new OpenApiSecurityScheme
-        {
-            Reference = new()
-            {
-                Type = ReferenceType.SecurityScheme,
-                Id = SecuritySchemeKey
-            }
-        };
+        var referenceScurityScheme = new OpenApiSecuritySchemeReference(
+            referenceId: SecuritySchemeKey,
+            hostDocument: openApiDocument);
 
         var securityRequirement = new OpenApiSecurityRequirement
         {
@@ -61,18 +56,20 @@ partial class JwtValidationSwaggerConfigurator
 
             foreach (var codeDescription in codeDescriptions)
             {
-                if (path.Responses.ContainsKey(codeDescription.Key) is false)
+                if (path.Responses.ContainsKey(codeDescription.Key))
                 {
-                    path.Responses[codeDescription.Key] = new()
-                    {
-                        Description = codeDescription.Value
-                    };
+                    continue;
                 }
+
+                path.Responses[codeDescription.Key] = new OpenApiResponse
+                {
+                    Description = codeDescription.Value
+                };
             }
         }
     }
 
-    private static IEnumerable<OpenApiOperation> GetOperations(OpenApiPathItem pathItem)
+    private static IEnumerable<OpenApiOperation> GetOperations(IOpenApiPathItem pathItem)
         =>
         pathItem.Operations?.Select(GetValue) ?? [];
 
